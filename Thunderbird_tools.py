@@ -5,7 +5,6 @@ IDVENDOR = 0x258a
 IDPRODUCT = 0x1007
 interface = 1
 
-
 def open_usb():
     global dev
 
@@ -19,6 +18,11 @@ def open_usb():
         dev.detach_kernel_driver(interface)
         print("Claim device.")
         usb.util.claim_interface(dev, interface)
+
+
+def close_usb():
+    usb.util.release_interface(dev, interface)
+    dev.attach_kernel_driver(interface)
 
 
 def set_color(colors):
@@ -47,7 +51,7 @@ def main():
     colors = [0x00, 0xFF, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00, 0x00, 0x00, 0x0]
     open_usb()
     set_color(colors)
-
+    close_usb()
 
 if __name__ == "__main__":
     main()
