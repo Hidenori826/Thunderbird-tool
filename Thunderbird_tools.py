@@ -15,9 +15,7 @@ def open_usb():
         raise ValueError("Device not found")
 
     if dev.is_kernel_driver_active(interface) is True:
-        print("Detach kernel driver.")
         dev.detach_kernel_driver(interface)
-        print("Claim device.")
         usb.util.claim_interface(dev, interface)
 
 
