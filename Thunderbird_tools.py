@@ -56,3 +56,5 @@ def set_color(colors, led_brightness):
                                                                                                     0xFF,
                                                                                                     0x00, 0x00, 0x00,
                                                                                                     0x00, 0x00, 0x00,
+                                                                                                    0x00, 0x00, 0x00]
+    usb_write(data)
