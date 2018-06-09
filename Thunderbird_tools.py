@@ -30,10 +30,7 @@ def usb_write(data):
 
 
 def usb_read(data):
-    # send a write to the device
     usb_write(data)
-
-    # return response data
     ret = dev.ctrl_transfer(bmRequestType=0xA1, bRequest=0x1, wValue=0x0304, wIndex=0x0001, data_or_wLength=data,
                             timeout=1000)
 
