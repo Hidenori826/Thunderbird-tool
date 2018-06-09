@@ -23,9 +23,13 @@ def close_usb():
     usb.util.release_interface(dev, interface)
     dev.attach_kernel_driver(interface)
 
-def hex2string(h):
-    string = "".join("%02x " % b for b in h)
-    return string
+
+def arraytolist(h):
+    hexlist = []
+    for value in h:
+        hexlist.append(value)
+    return hexlist
+
 
 def usb_write(data):
     dev.ctrl_transfer(bmRequestType=0x21, bRequest=0x9, wValue=0x0304, wIndex=0x0001, data_or_wLength=data,
