@@ -5,6 +5,7 @@ IDVENDOR = 0x258a
 IDPRODUCT = 0x1007
 interface = 1
 
+
 def open_usb():
     global dev
 
@@ -26,8 +27,19 @@ def close_usb():
 
 
 def usb_write(data):
-    dev.ctrl_transfer(bmRequestType=0x21, bRequest=0x09, wValue=0x0304, wIndex=0x0001, data_or_wLength=data,
+    dev.ctrl_transfer(bmRequestType=0x21, bRequest=0x9, wValue=0x0304, wIndex=0x0001, data_or_wLength=data,
                       timeout=1000)
+
+
+def usb_read(data):
+    # send a write to the device
+    usb_write(data)
+
+    # return response data
+    ret = dev.ctrl_transfer(bmRequestType=0xA1, bRequest=0x1, wValue=0x0304, wIndex=0x0001, data_or_wLength=data,
+                            timeout=1000)
+
+    return ret
 
 
 def set_color(colors, led_brightness):
@@ -36,12 +48,17 @@ def set_color(colors, led_brightness):
             0x00, 0x00, 0x00, 0x00, 0x0A, 0x47, 0x61, 0x6D, 0x65, 0x20, 0x4D, 0x6F, 0x75, 0x73, 0x65, 0x00, 0x00, 0x00,
             0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x15,
             0x80, 0x00, 0x04, 0x07, 0x0A, 0x0E, 0x10, 0x81, 0x81, 0x82, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-            0x00, 0x00, 0x00, 0x48, 0x02, 0x00] + [led_brightness] + [0x04, 0x00, 0x00] + colors + [0xFA, 0x03, 0x6A, 0xFF, 0xFF, 0xFF,
-                                                                                    0x00, 0x00, 0x00, 0xCB,
-                                                                                    0x34, 0x78, 0xFF, 0xFF, 0x00, 0x00,
-                                                                                    0xFF, 0x00, 0x00, 0xFF,
-                                                                                    0xFF, 0x00, 0x00, 0xFF, 0xFF, 0x00,
-                                                                                    0xFF, 0xFF, 0xFF, 0xFF,
-                                                                                    0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-                                                                                    0x00, 0x00, 0x00]
-    usb_write(data)
+            0x00, 0x00, 0x00, 0x48, 0x02, 0x00] + [led_brightness] + [0x04, 0x00, 0x00] + colors + [0xFA, 0x03, 0x6A,
+                                                                                                    0xFF, 0xFF, 0xFF,
+                                                                                                    0x00, 0x00, 0x00,
+                                                                                                    0xCB,
+                                                                                                    0x34, 0x78, 0xFF,
+                                                                                                    0xFF, 0x00, 0x00,
+                                                                                                    0xFF, 0x00, 0x00,
+                                                                                                    0xFF,
+                                                                                                    0xFF, 0x00, 0x00,
+                                                                                                    0xFF, 0xFF, 0x00,
+                                                                                                    0xFF, 0xFF, 0xFF,
+                                                                                                    0xFF,
+                                                                                                    0x00, 0x00, 0x00,
+                                                                                                    0x00, 0x00, 0x00,
