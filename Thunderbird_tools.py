@@ -1,5 +1,6 @@
 import usb.core
 import usb.util
+import os.path
 
 IDVENDOR = 0x258a
 IDPRODUCT = 0x1007
@@ -29,27 +30,38 @@ def usb_write(data):
                       timeout=1000)
 
 
+def set_color(colors, led_brightness, color_profile):
+    current_colors = []
+    color = 0
 
+    if not (os.path.isfile("thunderbird.conf")):
+        color_file = open("thunderbird.conf", "w+")
+        color_file.write("0 255 0 255 0 0 0 0 255 0 255 255 255 255 0")
+        color_file.close()
+    color_file = open("thunderbird.conf", "r+")
+    line = color_file.read()
 
-def set_color(colors, led_brightness):
+    for i in line.split():
+        if i.isdigit():
+            current_colors.append(int(i))
+
+    while (color < 3):
+       current_colors[(color + (color_profile * 3))] = colors[color]
+       color += 1
+
     data = [0x04, 0x8A, 0x25, 0x07, 0x10, 0x30, 0x01, 0x80, 0x3C, 0x0A, 0x53, 0x49, 0x4E, 0x4F, 0x57, 0x45, 0x41, 0x4C,
             0x54, 0x48, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
             0x00, 0x00, 0x00, 0x00, 0x0A, 0x47, 0x61, 0x6D, 0x65, 0x20, 0x4D, 0x6F, 0x75, 0x73, 0x65, 0x00, 0x00, 0x00,
             0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x15,
             0x80, 0x00, 0x04, 0x07, 0x0A, 0x0E, 0x10, 0x81, 0x81, 0x82, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-            0x00, 0x00, 0x00, 0x48, 0x02, 0x00] + [led_brightness] + [0x04, 0x00, 0x00] + colors + [0xFA, 0x03, 0x6A,
-                                                                                                    0xFF, 0xFF, 0xFF,
-                                                                                                    0x00, 0x00, 0x00,
-                                                                                                    0xCB,
-                                                                                                    0x34, 0x78, 0xFF,
-                                                                                                    0xFF, 0x00, 0x00,
-                                                                                                    0xFF, 0x00, 0x00,
-                                                                                                    0xFF,
-                                                                                                    0xFF, 0x00, 0x00,
-                                                                                                    0xFF, 0xFF, 0x00,
-                                                                                                    0xFF, 0xFF, 0xFF,
-                                                                                                    0xFF,
-                                                                                                    0x00, 0x00, 0x00,
-                                                                                                    0x00, 0x00, 0x00,
-                                                                                                    0x00, 0x00, 0x00]
+            0x00, 0x00, 0x00, 0x48, 0x02, 0x00]
+    data += [led_brightness] + [0x04, 0x00, 0x00] + current_colors + [0xFA, 0x03, 0x6A, 0xFF, 0xFF, 0xFF, 0x00, 0x00,
+                                                                      0x00, 0xCB, 0x34, 0x78, 0xFF, 0xFF, 0x00, 0x00,
+                                                                      0xFF, 0x00, 0x00, 0xFF, 0xFF, 0x00, 0x00, 0xFF,
+                                                                      0xFF, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x00, 0x00,
+                                                                      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]
+    current_colors = ' '.join(str(x) for x in current_colors)
+    color_file.seek(0,0)
+    color_file.write(current_colors)
+    color_file.close()
     usb_write(data)
