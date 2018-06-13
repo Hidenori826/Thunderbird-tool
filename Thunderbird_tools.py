@@ -24,13 +24,6 @@ def close_usb():
     dev.attach_kernel_driver(interface)
 
 
-def arraytolist(h):
-    hexlist = []
-    for value in h:
-        hexlist.append(value)
-    return hexlist
-
-
 def usb_write(data):
     dev.ctrl_transfer(bmRequestType=0x21, bRequest=0x9, wValue=0x0304, wIndex=0x0001, data_or_wLength=data,
                       timeout=1000)
