@@ -36,11 +36,6 @@ def usb_write(data):
                       timeout=1000)
 
 
-def usb_read(data):
-    usb_write(data)
-    ret = dev.ctrl_transfer(bmRequestType=0xA1, bRequest=0x1, wValue=0x0304, wIndex=0x0001, data_or_wLength=data,
-                            timeout=1000)
-    return ret
 
 
 def set_color(colors, led_brightness):
