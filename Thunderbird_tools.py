@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import sys
 
 import usb.core
 import usb.util
@@ -67,3 +68,11 @@ def set_color(colors, led_brightness, color_profile):
     color_file.write(current_colors)
     color_file.close()
     usb_write(data)
+
+if __name__ == "__main__":
+    open_usb()
+    if len(sys.argv) < 2:
+        sys.exit("Usage: %s hex_value hex_value hex_value led_brightness profile")
+    set_color([int(sys.argv[1], 16), int(sys.argv[2], 16), int(sys.argv[3], 16)], int(sys.argv[4], 16),
+               int(sys.argv[5], 16))
+    close_usb()
