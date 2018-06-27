@@ -45,7 +45,6 @@ def usb_write(data):
 
 def set_color(colors, led_brightness, color_profile):
     current_colors = []
-    color = 0
 
     if not (os.path.isfile("thunderbird.conf")):
         color_file = open("thunderbird.conf", "w+")
@@ -58,7 +57,7 @@ def set_color(colors, led_brightness, color_profile):
         if i.isdigit():
             current_colors.append(int(i))
 
-    while (color < 3):
+    for color in range(3):
         current_colors[(color + (color_profile * 3))] = colors[color]
         color += 1
     data[96] = led_brightness
