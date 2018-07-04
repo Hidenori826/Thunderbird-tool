@@ -43,14 +43,19 @@ def usb_write(data):
                       timeout=1000)
 
 
-def set_color(colors, led_brightness, color_profile):
-    current_colors = []
-
+def open_config():
     if not (os.path.isfile("thunderbird.conf")):
         color_file = open("thunderbird.conf", "w+")
-        color_file.write("0 255 0 255 0 0 0 0 255 0 255 255 255 255 0")
+        color_file.write("0 255 0 255 0 0 0 0 255 0 255 255 255 255 0 72")
         color_file.close()
     color_file = open("thunderbird.conf", "r+")
+
+    return color_file
+
+
+def set_color(led_brightness, color_profile, colors):
+    current_colors = []
+    color_file = open_config()
     line = color_file.read()
 
     for i in line.split():
