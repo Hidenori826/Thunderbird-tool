@@ -88,8 +88,14 @@ def set_color(led_brightness, color_profile, colors):
 
 if __name__ == "__main__":
     open_usb()
-    if len(sys.argv) < 2 or len(sys.argv) > 6:
+    if len(sys.argv) < 2 or len(sys.argv) > 7:
         sys.exit("Usage: %s hex_value hex_value hex_value led_brightness profile")
-    set_color([int(sys.argv[1], 16), int(sys.argv[2], 16), int(sys.argv[3], 16)], int(sys.argv[4], 16),
-              int(sys.argv[5], 16))
+
+    set_mode(sys.argv[1], int(sys.argv[2], 16))
+    if sys.argv[1] != "-n":
+        set_color(int(sys.argv[2], 16), int(sys.argv[3], 16), [int(sys.argv[4], 16), int(sys.argv[5], 16),
+                    int(sys.argv[6], 16)])
+    else:
+        usb_write(data)
+        
     close_usb()
