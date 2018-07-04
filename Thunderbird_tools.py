@@ -77,9 +77,9 @@ def set_color(led_brightness, color_profile, colors):
         current_colors[(color + (color_profile * 3))] = colors[color]
         color += 1
     data[96] = led_brightness
-    data[100:115] = current_colors
+    data[100:115] = current_colors[0:15]
 
-    current_colors = ' '.join(str(x) for x in current_colors)
+    current_colors = ' '.join(str(x) for x in current_colors[0:15])
     color_file.seek(0, 0)
     color_file.write(current_colors)
     color_file.close()
