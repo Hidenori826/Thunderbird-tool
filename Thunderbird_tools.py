@@ -52,6 +52,18 @@ def open_config():
     return color_file
 
 
+def set_mode(led_mode, led_frequency):
+    color_file = open_config()
+    if led_mode == "-n":
+        data[93] = 132
+    elif led_mode == "-r":
+        data[93] = 66
+    elif led_mode == "-s":
+        data[93] = 0x48
+    data[96] = led_frequency
+    color_file.close()
+
+
 def set_color(led_brightness, color_profile, colors):
     current_colors = []
     color_file = open_config()
