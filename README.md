@@ -1,6 +1,6 @@
-# Linux tools for Thunderbird mouse.
+# Linux tools for Pictek Thunderbird mouse.
 ## About
-Tools to adjust the LED color and mode of the Thunderbird mouse under linux. This should work on macOS/BSD but
+Tools to adjust the LED color and mode of the Picktek Thunderbird mouse under linux. This should work on macOS/BSD but
 I do not have a machine running these operating systems to test it on currently.
 ## WARNING
 This program is still under development and requires root. I take no responsibility for any harm that may come to you, or your system if you run this. You may setup the following udev rule under /etc/udev/rules.d/50-Thunderbird.rules so that it does not require root access.
