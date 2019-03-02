@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import argparse
+import pickle
 import sys
 
 import usb.core
@@ -41,17 +42,22 @@ def usb_write(data):
 
 
 def open_config():
-    if not (os.path.isfile("thunderbird.conf")):
-        color_file = open("thunderbird.conf", "w+")
-        color_file.write("0 255 0 255 0 0 0 0 255 0 255 255 255 255 0 72 162 115")
-        color_file.close()
-    color_file = open("thunderbird.conf", "r+")
+    if not (os.path.isfile("thunderbird.pkl")):
+        default_config = [0, 255, 0, 255, 0, 0, 0, 0, 255, 0, 255, 255, 255, 255, 0, 72, 162, 115]
+        write_config(default_config)
+    pickle_file = open("thunderbird.pkl", "rb")
+    config = pickle.load(pickle_file)
+    pickle_file.close()
+    return config
 
-    return color_file
+
+def write_config(config):
+    pickle_file = open("thunderbird.pkl", "wb")
+    pickle.dump(config, pickle_file)
+    pickle_file.close()
 
 
 def set_mode(led_mode, led_frequency):
-    config = open_config()
     if led_mode == "-s":
         data[93] = 0x28
     elif led_mode == "-b":
@@ -59,44 +65,21 @@ def set_mode(led_mode, led_frequency):
     elif led_mode == "-n":
         data[93] = 0x44
     data[96] = led_frequency
-    temp_config = str_to_list(config.read())
-    temp_config[15] = led_frequency
-    temp_config[16] = ord(led_mode[1])
-    temp_config = list_to_str(temp_config, 17)
-    config.seek(0,0)
-    config.write(temp_config)
-    config.close()
+    config = open_config()
+    config[15] = led_frequency
+    config[16] = ord(led_mode[1])
+    write_config(config)
+
 
 
 def set_color(led_brightness, profile, colors):
     config = open_config()
-    line = config.read()
-
-    current_colors = str_to_list(line)
     for i, color in enumerate(colors):
-        print(color)
-        print(i)
-        current_colors[(i + (profile * 3))] = color
+        config[(i + (profile * 3))] = color
     data[96] = led_brightness
-    data[100:115] = current_colors[0:15]
-
-    current_colors = list_to_str(current_colors, 15)
-    config.seek(0, 0)
-    config.write(current_colors)
-    config.close()
+    data[100:115] = config[0:15]
+    write_config(config)
     usb_write(data)
-
-
-def str_to_list(string):
-    temp = []
-    for i in string.split():
-        if i.isdigit():
-            temp.append(int(i))
-    return temp
-
-
-def list_to_str(list, index):
-    return ' '.join(str(x) for x in list[0:index])
 
 
 if __name__ == "__main__":
