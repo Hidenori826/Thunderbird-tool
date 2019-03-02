@@ -41,7 +41,7 @@ def usb_write(data):
 def open_config():
     if not (os.path.isfile("thunderbird.conf")):
         color_file = open("thunderbird.conf", "w+")
-        color_file.write("0 255 0 255 0 0 0 0 255 0 255 255 255 255 0 72")
+        color_file.write("0 255 0 255 0 0 0 0 255 0 255 255 255 255 0 72 162 115")
         color_file.close()
     color_file = open("thunderbird.conf", "r+")
 
@@ -49,37 +49,52 @@ def open_config():
 
 
 def set_mode(led_mode, led_frequency):
-    color_file = open_config()
-    if led_mode == "-n":
-        data[93] = 132
-    elif led_mode == "-r":
-        data[93] = 66
-    elif led_mode == "-s":
-        data[93] = 0x48
+    config = open_config()
+    if led_mode == "-s":
+        data[93] = 0x28
+    elif led_mode == "-b":
+        data[93] = 0x22
+    elif led_mode == "-n":
+        data[93] = 0x44
     data[96] = led_frequency
-    color_file.close()
+    temp_config = str_to_list(config.read())
+    temp_config[15] = led_frequency
+    temp_config[16] = ord(led_mode[1])
+    temp_config = list_to_str(temp_config, 17)
+    config.seek(0,0)
+    config.write(temp_config)
+    config.close()
 
 
 def set_color(led_brightness, color_profile, colors):
     current_colors = []
-    color_file = open_config()
-    line = color_file.read()
+    config = open_config()
+    line = config.read()
 
-    for i in line.split():
-        if i.isdigit():
-            current_colors.append(int(i))
-
+    current_colors = str_to_list(line)
     for color in range(3):
         current_colors[(color + (color_profile * 3))] = colors[color]
         color += 1
     data[96] = led_brightness
     data[100:115] = current_colors[0:15]
 
-    current_colors = ' '.join(str(x) for x in current_colors[0:15])
-    color_file.seek(0, 0)
-    color_file.write(current_colors)
-    color_file.close()
+    current_colors = list_to_str(current_colors, 15)
+    config.seek(0, 0)
+    config.write(current_colors)
+    config.close()
     usb_write(data)
+
+
+def str_to_list(string):
+    temp = []
+    for i in string.split():
+        if i.isdigit():
+            temp.append(int(i))
+    return temp
+
+
+def list_to_str(list, index):
+    return ' '.join(str(x) for x in list[0:index])
 
 
 if __name__ == "__main__":
