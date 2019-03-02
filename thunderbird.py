@@ -68,15 +68,15 @@ def set_mode(led_mode, led_frequency):
     config.close()
 
 
-def set_color(led_brightness, color_profile, colors):
-    current_colors = []
+def set_color(led_brightness, profile, colors):
     config = open_config()
     line = config.read()
 
     current_colors = str_to_list(line)
-    for color in range(3):
-        current_colors[(color + (color_profile * 3))] = colors[color]
-        color += 1
+    for i, color in enumerate(colors):
+        print(color)
+        print(i)
+        current_colors[(i + (profile * 3))] = color
     data[96] = led_brightness
     data[100:115] = current_colors[0:15]
 
