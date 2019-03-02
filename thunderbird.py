@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
+import argparse
 import sys
 
 import usb.core
 import usb.util
 import os.path
+
 
 interface = 1
 data = [0x04, 0x8A, 0x25, 0x07, 0x10, 0x30, 0x01, 0x80, 0x3C, 0x0A, 0x53, 0x49, 0x4E, 0x4F, 0x57, 0x45, 0x41, 0x4C,
@@ -99,13 +101,26 @@ def list_to_str(list, index):
 
 if __name__ == "__main__":
     open_usb()
-    if len(sys.argv) < 2 or len(sys.argv) > 7:
-        sys.exit("Usage: %s hex_value hex_value hex_value led_brightness profile")
+    parser = argparse.ArgumentParser(description="Command line tool to modify mouse LED settings",
+                                    usage="thunderbird.py [-h] [-s] [-b] [-n] [-p profile] [-r r g b] power")
+    parser.add_argument("-s", "--solid", action="store_true",  help="Set mouse mode to solid")
+    parser.add_argument("-b", "--breath", action="store_true",  help="Set mouse mode to breath")
+    parser.add_argument("-n", "--neon", action="store_true",  help="Set mouse mode to neon")
+    parser.add_argument("power", type=str, help="The brightness/speed of the mouse color setting")
+    parser.add_argument("-p", "--profile", type=int, help="The profile of the mouse from 0-4", dest="profile", metavar='')
+    parser.add_argument("-r", "--rgb", type=int, default=[], nargs=3, help="Color of the mouse to be set in decimal [r g b]", dest="rgb", metavar='')
+    args = parser.parse_args()
+    
+    if args.rgb is not None and len(args.rgb) != 3 and (args.solid or args.breath):
+        print("Please enter 3 values for rgb.")
+        sys.exit()
+    if not (args.solid or args.breath or args.neon):
+        print("Please enter a mode.")
+        sys.exit()
 
-    set_mode(sys.argv[1], int(sys.argv[2], 16))
-    if sys.argv[1] != "-n":
-        set_color(int(sys.argv[2], 16), int(sys.argv[3], 16), [int(sys.argv[4], 16), int(sys.argv[5], 16),
-                                                               int(sys.argv[6], 16)])
+    if sys.argv[1] == "-s":
+        set_color(int(args.power, 16), args.profile, args.rgb)
     else:
+        set_mode(sys.argv[1], int(args.power, 16))
         usb_write(data)
     close_usb()
