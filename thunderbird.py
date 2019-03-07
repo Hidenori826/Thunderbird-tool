@@ -57,26 +57,33 @@ def write_config(config):
     pickle_file.close()
 
 
-def set_mode(led_mode, led_frequency):
-    if led_mode == "-s":
-        data[93] = 0x28
-    elif led_mode == "-b":
-        data[93] = 0x22
-    elif led_mode == "-n":
-        data[93] = 0x44
-    data[96] = led_frequency
+def set_mode(led_mode, led_power, color=[], profile=0):
     config = open_config()
-    config[15] = led_frequency
-    config[16] = ord(led_mode[1])
+    led_power = (18 + (16 * led_power))
+    # Set mouse mode to solid
+    if led_mode == 1:
+        set_color(profile, color)
+        data[93] = 0x28
+        config[16] = 0x28
+    # Set mouse mode to breath
+    elif led_mode == 2:
+        set_color(profile, color)
+        data[93] = 0x22
+        config[16] = 0x22
+    # Set mouse mode to neon
+    elif led_mode == 3:
+        data[93] = 0x44
+        config[16] = 0x44
+    config[15] = led_power
+    data[96] = led_power
     write_config(config)
+    usb_write(data)
 
 
-
-def set_color(led_brightness, profile, colors):
+def set_color(profile, colors):
     config = open_config()
     for i, color in enumerate(colors):
         config[(i + (profile * 3))] = color
-    data[96] = led_brightness
     data[100:115] = config[0:15]
     write_config(config)
     usb_write(data)
@@ -86,10 +93,10 @@ if __name__ == "__main__":
     open_usb()
     parser = argparse.ArgumentParser(description="Command line tool to modify mouse LED settings",
                                     usage="thunderbird.py [-h] [-s] [-b] [-n] [-p profile] [-r r g b] power")
-    parser.add_argument("-s", "--solid", action="store_true",  help="Set mouse mode to solid")
+    parser.add_argument("-s", "--solid", action="store_true", help="Set mouse mode to solid")
     parser.add_argument("-b", "--breath", action="store_true",  help="Set mouse mode to breath")
     parser.add_argument("-n", "--neon", action="store_true",  help="Set mouse mode to neon")
-    parser.add_argument("power", type=str, help="The brightness/speed of the mouse color setting")
+    parser.add_argument("power", type=int, help="The brightness/speed of the mouse color setting from 0-9")
     parser.add_argument("-p", "--profile", type=int, help="The profile of the mouse from 0-4", dest="profile", metavar='')
     parser.add_argument("-r", "--rgb", type=int, default=[], nargs=3, help="Color of the mouse to be set in decimal [r g b]", dest="rgb", metavar='')
     args = parser.parse_args()
@@ -101,9 +108,10 @@ if __name__ == "__main__":
         print("Please enter a mode.")
         sys.exit()
 
-    if sys.argv[1] == "-s":
-        set_color(int(args.power, 16), args.profile, args.rgb)
-    else:
-        set_mode(sys.argv[1], int(args.power, 16))
-        usb_write(data)
+    if args.solid == True:
+        set_mode(1, args.power, args.rgb, args.profile)
+    elif args.breath == True:
+        set_mode(2, args.power, args.rgb, args.profile)
+    elif args.neon == True:
+        set_mode(3, args.power)
     close_usb()
