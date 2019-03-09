@@ -8,6 +8,9 @@ import usb.util
 import os.path
 
 
+SOLID = 0x28
+BREATH = 0x22
+NEON = 0x44
 interface = 1
 data = [0x04, 0x8A, 0x25, 0x07, 0x10, 0x30, 0x01, 0x80, 0x3C, 0x0A, 0x53, 0x49, 0x4E, 0x4F, 0x57, 0x45, 0x41, 0x4C,
         0x54, 0x48, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -22,7 +25,6 @@ data = [0x04, 0x8A, 0x25, 0x07, 0x10, 0x30, 0x01, 0x80, 0x3C, 0x0A, 0x53, 0x49, 
 
 def open_usb():
     global dev
-
     dev = usb.core.find(idVendor=0x258a, idProduct=0x1007)
     if dev is None:
         raise ValueError("Device not found")
@@ -43,7 +45,7 @@ def usb_write(data):
 
 def open_config():
     if not (os.path.isfile("thunderbird.pkl")):
-        default_config = [0, 255, 0, 255, 0, 0, 0, 0, 255, 0, 255, 255, 255, 255, 0, 72, 162, 115]
+        default_config = [0, 255, 0, 255, 0, 0, 0, 0, 255, 0, 255, 255, 255, 255, 0]
         write_config(default_config)
     pickle_file = open("thunderbird.pkl", "rb")
     config = pickle.load(pickle_file)
@@ -58,25 +60,16 @@ def write_config(config):
 
 
 def set_mode(led_mode, led_power, color=[], profile=0):
-    config = open_config()
     led_power = (18 + (16 * led_power))
-    # Set mouse mode to solid
     if led_mode == 1:
         set_color(profile, color)
-        data[93] = 0x28
-        config[16] = 0x28
-    # Set mouse mode to breath
+        data[93] = SOLID
     elif led_mode == 2:
         set_color(profile, color)
-        data[93] = 0x22
-        config[16] = 0x22
-    # Set mouse mode to neon
+        data[93] = BREATH
     elif led_mode == 3:
-        data[93] = 0x44
-        config[16] = 0x44
-    config[15] = led_power
+        data[93] = NEON
     data[96] = led_power
-    write_config(config)
     usb_write(data)
 
 
@@ -86,21 +79,22 @@ def set_color(profile, colors):
         config[(i + (profile * 3))] = color
     data[100:115] = config[0:15]
     write_config(config)
-    usb_write(data)
 
 
 if __name__ == "__main__":
     open_usb()
     parser = argparse.ArgumentParser(description="Command line tool to modify mouse LED settings",
-                                    usage="thunderbird.py [-h] [-s] [-b] [-n] [-p profile] [-r r g b] power")
+                                     usage="thunderbird.py [-h] [-s] [-b] [-n] [-p profile] [-r r g b] power")
     parser.add_argument("-s", "--solid", action="store_true", help="Set mouse mode to solid")
-    parser.add_argument("-b", "--breath", action="store_true",  help="Set mouse mode to breath")
-    parser.add_argument("-n", "--neon", action="store_true",  help="Set mouse mode to neon")
-    parser.add_argument("power", type=int, help="The brightness/speed of the mouse color setting from 0-9")
+    parser.add_argument("-b", "--breath", action="store_true", help="Set mouse mode to breath")
+    parser.add_argument("-n", "--neon", action="store_true", help="Set mouse mode to neon")
+    parser.add_argument("power", type=int, help="The brightness of the LED or speed at which it rotates through\
+                                                colors/pulsates from 0-9")
     parser.add_argument("-p", "--profile", type=int, help="The profile of the mouse from 0-4", dest="profile", metavar='')
-    parser.add_argument("-r", "--rgb", type=int, default=[], nargs=3, help="Color of the mouse to be set in decimal [r g b]", dest="rgb", metavar='')
+    parser.add_argument("-r", "--rgb", type=int, default=[], nargs=3,
+                        help="Color of the mouse to be set in decimal [r g b]", dest="rgb", metavar='')
     args = parser.parse_args()
-    
+
     if args.rgb is not None and len(args.rgb) != 3 and (args.solid or args.breath):
         print("Please enter 3 values for rgb.")
         sys.exit()
@@ -108,10 +102,10 @@ if __name__ == "__main__":
         print("Please enter a mode.")
         sys.exit()
 
-    if args.solid == True:
+    if args.solid:
         set_mode(1, args.power, args.rgb, args.profile)
-    elif args.breath == True:
+    elif args.breath:
         set_mode(2, args.power, args.rgb, args.profile)
-    elif args.neon == True:
+    elif args.neon:
         set_mode(3, args.power)
     close_usb()
